@@ -1,0 +1,9 @@
+---
+linux:
+  children:
+    app:
+      hosts:
+        server01:
+    bd:
+      hosts:
+        server02:
