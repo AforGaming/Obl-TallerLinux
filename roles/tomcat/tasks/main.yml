@@ -67,29 +67,23 @@
     src: ./files/tomcat.service
     dest:  /etc/systemd/system/tomcat.service
 
+- name: Cambiar owner de carpeta tomcat
+  ansible.builtin.file:
+    path: /usr/local/tomcat/
+    state: directory
+    recurse: yes
+    owner: appadmin
+    group: appadmin
+
 - name: Copiar app en carpeta tomcat
   ansible.builtin.copy:
     src: ./files/todo.war
     dest:  /usr/local/tomcat/webapps/
   notify: Reiniciar tomcat
 
-- name: Extraer todo.war
-  ansible.builtin.unarchive:
-    src: /usr/local/tomcat/webapps/todo.war
-    dest: /usr/local/tomcat/webapps/todo/
-    remote_src: true
-
 - name: Cambiar owner de carpeta todo
   ansible.builtin.file:
     path: /usr/local/tomcat/webapps/todo
-    state: directory
-    recurse: yes
-    owner: appadmin
-    group: appadmin
-
-- name: Cambiar owner de carpeta tomcat
-  ansible.builtin.file:
-    path: /usr/local/tomcat/
     state: directory
     recurse: yes
     owner: appadmin
