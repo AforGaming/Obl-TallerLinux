@@ -92,8 +92,16 @@
 - name: Sustituir app properties
   ansible.builtin.copy:
     src: ./files/app.properties
-    dest:  /usr/local/tomcat/webapps/todo/WEB-INF/app.properties
+    dest:  /opt/config/
   notify: Reiniciar tomcat
+
+- name: Cambiar owner de carpeta config
+  ansible.builtin.file:
+    path: /opt/config
+    state: directory
+    recurse: yes
+    owner: appadmin
+    group: appadmin
 
 - name: Editar .bash_profile
   lineinfile:
