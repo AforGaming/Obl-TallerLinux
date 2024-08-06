@@ -1,0 +1,7 @@
+---
+- name: Instalacion de mariadb
+  hosts: bd
+  become: true
+  user: sysadmin
+  roles:
+      - database

@@ -1,5 +1,5 @@
 ---
-- name: Hardening de servidores
+- name: Instalacion de httpd
   hosts: app
   become: true
   user: sysadmin

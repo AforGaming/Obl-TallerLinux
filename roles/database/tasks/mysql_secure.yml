@@ -1,0 +1,49 @@
+---
+- name: Eliminar usuarios anonimos
+  community.mysql.mysql_user:
+    name: ''
+    host_all: true
+    state: absent
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+- name: Eliminar la base de datos de prueba y su acceso
+  community.mysql.mysql_db:
+    login_unix_socket: /run/mysqld/mysqld.sock
+    name: test
+    state: absent
+
+- name: Cambiar password de root
+  community.mysql.mysql_user: 
+    login_user: root 
+    login_password: "{{ mysql_root_db_pass }}" 
+    user: root 
+    password: "{{ mysql_root_db_pass }}"
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+- name: Cambiar password de root IPV6 localhost (::1)
+  community.mysql.mysql_user: 
+    login_user: root 
+    login_password: "{{ mysql_root_db_pass }}" 
+    user: root 
+    password: "{{ mysql_root_db_pass }}" 
+    host: "::1"
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+- name: Cambiar password de root IPV4 localhost (127.0.0.1)
+  community.mysql.mysql_user: 
+    login_user: root 
+    login_password: "{{ mysql_root_db_pass }}" 
+    user: root 
+    password: "{{ mysql_root_db_pass }}" 
+    host: "127.0.0.1"
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+- name: Cambiar password de root localhost domain
+  community.mysql.mysql_user: 
+    login_user: root 
+    login_password: "{{ mysql_root_db_pass }}" 
+    user: root 
+    password: "{{ mysql_root_db_pass }}" 
+    host: "localhost"
+    login_unix_socket: /run/mysqld/mysqld.sock
+
