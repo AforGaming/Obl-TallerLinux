@@ -1,0 +1,7 @@
+---
+- name: Hardening de servidores
+  hosts: app
+  become: true
+  user: sysadmin
+  roles:
+      - tomcat

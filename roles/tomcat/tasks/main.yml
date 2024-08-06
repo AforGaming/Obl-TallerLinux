@@ -1,0 +1,100 @@
+---
+- name: Instalar openjdk
+  ansible.builtin.dnf:
+    name: java-17-openjdk
+    state: present
+
+- name: Configurar SELinux para que scripts y modulos HTTPD se conecten a la red
+  shell: sudo semanage boolean -m --on httpd_can_network_connect
+
+- name: Descargar Tomcat
+  ansible.builtin.get_url:
+    url: https://downloads.apache.org/tomcat/tomcat-9/v9.0.91/bin/apache-tomcat-9.0.91.tar.gz
+    dest: /opt/tomcat
+
+- name: Extraer tar.gz
+  ansible.builtin.unarchive:
+    src: /opt/tomcat/apache-tomcat-9.0.91.tar.gz
+    dest: /usr/local/
+    remote_src: true
+
+- name: Crear usuario para servicio tomcat
+  ansible.builtin.user:
+    name: appadmin
+    state: present
+    shell: /bin/bash
+    create_home: yes
+
+- name: Crear directorio tomcat
+  ansible.builtin.file:
+    path: /usr/local/tomcat
+    state: directory
+    owner: appadmin
+    group: appadmin
+    mode: '0755'
+
+- name: Cambiar owner de carpeta tomcat
+  ansible.builtin.file:
+    path: /usr/local/apache-tomcat-9.0.91/
+    state: directory
+    recurse: yes
+    owner: appadmin
+    group: appadmin
+
+- name: Copiar archivos tomcat a /usr/local/tomcat
+  ansible.builtin.copy:
+    src: /usr/local/apache-tomcat-9.0.91/
+    dest: /usr/local/tomcat/
+    remote_src: true
+
+- name: Crear servicio tomcat
+  ansible.builtin.copy: 
+    src: ./files/tomcat.service
+    dest:  /etc/systemd/system/tomcat.service
+
+- name: Copiar app en carpeta tomcat
+  ansible.builtin.copy:
+    src: ./files/todo.war
+    dest:  /usr/local/tomcat/webapps/todo/
+  notify: Reiniciar tomcat
+
+- name: Cambiar owner de carpeta todo
+  ansible.builtin.file:
+    path: /usr/local/tomcat/webapps/todo
+    state: directory
+    recurse: yes
+    owner: appadmin
+    group: appadmin
+
+- name: Sustituir app properties
+  ansible.builtin.copy:
+    src: ./files/app.properties
+    dest:  /usr/local/tomcat/webapps/todo/WEB-INF/app.properties
+  notify: Reiniciar tomcat
+
+- name: Editar .bash_profile
+  lineinfile:
+    path: /home/appadmin/.bash_profile
+    create: yes
+    line: "{{ item }}"
+  with_items:
+    - 'JAVA_HOME=/usr/lib/jvm/jre-17'
+    - 'export JAVA_HOME'
+    - 'PATH=$PATH:$JAVA_HOME/bin'
+    - 'export PATH'
+
+- name: Tomcat levantado y habilitado
+  ansible.builtin.systemd_service:
+    name: tomcat.service
+    state: started
+    enabled: true
+
+
+
+
+
+
+
+
+
+
