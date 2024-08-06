@@ -1,0 +1,12 @@
+---
+- name: Configuro opciones de seguridad de ssh
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "^#PermitRootLogin"
+    line: "PermitRootLogin no"
+  notify: Reinicio servidor ssh
+  register: results_sshd
+
+- name: Ver resultado de tarea anterior
+  ansible.builtin.debug:
+    var: results_sshd

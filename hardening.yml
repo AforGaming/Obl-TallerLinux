@@ -1,0 +1,7 @@
+---
+- name: Hardening de servidores
+  hosts: linux
+  become: true
+  user: sysadmin
+  roles:
+      - hardening

@@ -1,0 +1,98 @@
+---
+- name: UFW instalado
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+
+- name: Permitir puerto 22 en ufw
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Defino politicas de tráfico entrante
+  community.general.ufw:
+    policy: allow
+    direction: outgoing
+    state: enabled
+
+- name: Defino politicas de tráfico entrante
+  community.general.ufw:
+    policy: deny
+    direction: incoming
+    state: enabled
+
+- name: servicio UFW levantado y activo
+  ansible.builtin.systemd_service:
+    name: ufw
+    state: started
+    enabled: true
+
+## Instalación de base de datos
+- name: MariaDB instalado
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update-cache: true
+  loop:
+    - mariadb-server
+    - mariadb-client
+    - python3-pymysql
+
+- name: Cambiar la configuracion para escuchar en todas las interfaces
+  ansible.builtin.lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: '^bind-address'
+    line: 'bind-address         = 0.0.0.0'
+  notify: Restart mariadb
+
+- name: Ejecuto el handler si cambió la configuración
+  meta: flush_handlers
+
+- name: Servidor Mariadb levantado
+  ansible.builtin.systemd_service: 
+    name: mariadb
+    state: started
+    enabled: true
+
+- name: Habilitamos en ufw la conexión a mariadb
+  community.general.ufw:
+    rule: allow
+    port: '3306'
+    protocol: tcp
+    direction: in
+
+##  Configuracion de la base de datos de la aplicación
+
+- name: Copio el dump de la base de datos
+  ansible.builtin.copy:
+    src: ./files/todo.sql
+    dest: /tmp/todo.sql
+
+- include: mysql_secure.yml
+
+- name: Verifico si la bd esta creada
+  community.mysql.mysql_db:
+    login_unix_socket: /run/mysqld/mysqld.sock
+    name: todo
+    state: present
+    login_password: "{{ mysql_root_db_pass }}" 
+  register: db_todo
+
+- name: Creo la base de datos todo
+  community.mysql.mysql_db:
+    login_unix_socket: /run/mysqld/mysqld.sock
+    name: todo
+    state: import
+    target: /tmp/todo.sql
+    login_password: "{{ mysql_root_db_pass }}" 
+  when: db_todo.changed
+
+- name: Crear usuario mysql para bd todo
+  community.mysql.mysql_user:
+    login_unix_socket: /run/mysqld/mysqld.sock
+    login_password: "{{ mysql_root_db_pass }}" 
+    state: present
+    name: todo
+    password: prueba2024
+    host: '%'
+    priv: 'todo.*:ALL'

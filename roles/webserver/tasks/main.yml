@@ -1,0 +1,30 @@
+---
+- name: Instalar apache
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - httpd
+    - mod_ssl
+
+- name: Configurar virtualhost
+  ansible.builtin.copy: 
+    src: ./files/virtualhost.conf
+    dest: /etc/httpd/conf.d/vh01_app.conf
+  notify: Reiniciar apache
+
+- name: Permito http y https
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    state: enabled
+    immediate: true
+    permanent: true
+  loop: 
+    - http
+    - https
+
+- name: Apache levantado y habilitado
+  ansible.builtin.systemd_service:
+    name: httpd
+    state: started
+    enabled: true

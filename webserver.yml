@@ -1,0 +1,7 @@
+---
+- name: Instalacion de httpd
+  hosts: app
+  become: true
+  user: sysadmin
+  roles:
+      - webserver

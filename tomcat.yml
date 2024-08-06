@@ -1,0 +1,7 @@
+---
+- name: Instalacion de tomcat
+  hosts: app
+  become: true
+  user: sysadmin
+  roles:
+      - tomcat
