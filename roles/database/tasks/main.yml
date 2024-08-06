@@ -89,7 +89,7 @@
     state: present
     name: todo
     password: prueba2024
-    priv:
-      'todo.*': 'ALL,GRANT'
+    host: '%'
+    priv: 'todo.*:ALL'
 
-##- include: mysql_secure.yml
+- include: mysql_secure.yml
