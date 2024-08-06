@@ -68,11 +68,14 @@
     src: ./files/todo.sql
     dest: /tmp/todo.sql
 
+- include: mysql_secure.yml
+
 - name: Verifico si la bd esta creada
   community.mysql.mysql_db:
     login_unix_socket: /run/mysqld/mysqld.sock
     name: todo
     state: present
+    login_password: "{{ mysql_root_db_pass }}" 
   register: db_todo
 
 - name: Creo la base de datos todo
@@ -81,15 +84,15 @@
     name: todo
     state: import
     target: /tmp/todo.sql
+    login_password: "{{ mysql_root_db_pass }}" 
   when: db_todo.changed
 
 - name: Crear usuario mysql para bd todo
   community.mysql.mysql_user:
     login_unix_socket: /run/mysqld/mysqld.sock
+    login_password: "{{ mysql_root_db_pass }}" 
     state: present
     name: todo
     password: prueba2024
     host: '%'
     priv: 'todo.*:ALL'
-
-- include: mysql_secure.yml
